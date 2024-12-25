@@ -843,15 +843,30 @@ async fn handle_peer_view_update<Context>(
 	new_view: View,
 	metrics: &Metrics,
 ) {
+	gum::info!(
+    target: LOG_TARGET,
+    "Peer view update received. (peer={}, view={:?})",
+    peer,
+    new_view,
+  );
 	let fresh_implicit = {
 		let peer_data = match state.peers.get_mut(&peer) {
 			None => return,
 			Some(p) => p,
 		};
 
+		gum::info!(
+      target: LOG_TARGET,
+      "Peer found"
+    );
 		peer_data.update_view(new_view, &state.implicit_view)
 	};
 
+	gum::info!(
+    target: LOG_TARGET,
+    "Fresh RPs. (rp={:?})",
+    fresh_implicit,
+  );
 	for new_relay_parent in fresh_implicit {
 		send_peer_messages_for_relay_parent(ctx, state, peer, new_relay_parent, metrics).await;
 	}
